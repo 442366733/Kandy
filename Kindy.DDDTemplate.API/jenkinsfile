@@ -1,0 +1,54 @@
+﻿Jenkinsfile (Declarative Pipeline)
+pipeline {
+    agent { label 'node1' }
+
+    environment {
+        git_credentialsId = 'c274adf3-5e73-4f62-a072-2075d408ab44' // git凭证
+    }
+
+    parameters {
+        string(name: 'PROJECTNAME', defaultValue: 'kindy.api', description: '项目名称')
+        string(name: 'PROJECTFILEPATH', defaultValue: './Kindy.DDDTemplate.API/Kindy.DDDTemplate.API.csproj', description: '源代码编译地址')
+        string(name: 'HARBORURL', defaultValue: 'hub.docker.com', description: 'harbor地址')
+        string(name: 'HARBORUSER', defaultValue: 'tangzixuan', description: 'harbor用户')
+        string(name: 'HARBORPWD', defaultValue: 'zx250889', description: 'harbor密码')
+        string(name: 'DOCKERFILE', defaultValue: 'src/Ccn.Mzc.TASK/Dockerfile', description: 'dockerfile地址')
+        string(name: 'GITURL', defaultValue: 'http://gitlab.ccn.local/cncop-netcore/testgroup/ccn.mzc.git', description: 'giturl地址')
+        string(name: 'Branch', defaultValue: 'dev', description: 'git branch')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                /* 清空项目目录缓存 */
+                sh 'rm -rf ./**'
+                echo '======================================git clone begin=============================================='
+                /* 拉取项目代码*/
+                git branch: "${params.Branch}", credentialsId: "${git_credentialsId}", url: "${params.GITURL}"
+                echo '======================================git clone end=============================================='
+                script {
+                    echo '======================================compile begin=============================================='
+                    sh '/usr/local/dotnet/dotnet restore --no-cache -s https://api.nuget.org/v3/index.json'
+                    sh "/usr/local/dotnet/dotnet build ./${params.PROJECTFILEPATH} -c Release -o ./app "
+                    sh 'ls -alh ./app'
+                    echo '======================================compile end================================================'
+                    
+                    sh "tar cvf app.tar.gz ./app/*"
+                    sh "docker build -f $DOCKERFILE -t $PROJECTNAME:$BUILD_ID ."
+                    sh "docker tag $PROJECTNAME:$BUILD_ID $HARBORURL/dotnet-dev/$PROJECTNAME:$BUILD_ID"
+                    sh "docker push $HARBORURL/dotnet-dev/$PROJECTNAME:$BUILD_ID"
+                    // sh "mv ${env.TAR_XZ_FILE} ${env.NGINXFILEPATH}"
+                }
+            }
+            post {
+                success {
+                    echo '发布成功'
+                }
+
+                failure {
+                    echo '发布失败'
+                }
+            }
+        }
+    }
+}
