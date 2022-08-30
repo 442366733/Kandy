@@ -8,6 +8,6 @@
 		<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\EventBusClient\Kindy.EventBusClient.Rabbitmq.csproj" />
+	  <ProjectReference Include="..\Kindy.EventBusClient\Kindy.EventBusClient.Rabbitmq.csproj" />
 	</ItemGroup>
 </Project>

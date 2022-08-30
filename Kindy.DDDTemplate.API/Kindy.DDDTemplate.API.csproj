@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventBusClient\Kindy.EventBusClient.Rabbitmq.csproj" />
+    <ProjectReference Include="..\Kindy.EventBusClient\Kindy.EventBusClient.Rabbitmq.csproj" />
     <ProjectReference Include="..\Kindy.DatabaseAccessor.SqlSugar\Kindy.DatabaseAccessor.SqlSugar.csproj" />
     <ProjectReference Include="..\Kindy.DDDTemplate.Application\Kindy.DDDTemplate.Application.csproj" />
     <ProjectReference Include="..\Kindy.Logging.Nlog\Kindy.Logging.Nlog.csproj" />
