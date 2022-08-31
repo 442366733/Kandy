@@ -1,35 +1,41 @@
-﻿Jenkinsfile (Declarative Pipeline)
+﻿#!/usr/bin/env groovy
 pipeline {
     agent { label 'node1' }
 
     environment {
-        git_credentialsId = 'c274adf3-5e73-4f62-a072-2075d408ab44' // git凭证
+        git_credentialsId = 'd0ad638a-0a98-415e-824f-02cb14f8a6fd' // git凭证
     }
 
     parameters {
         string(name: 'PROJECTNAME', defaultValue: 'kindy.api', description: '项目名称')
         string(name: 'PROJECTFILEPATH', defaultValue: './Kindy.DDDTemplate.API/Kindy.DDDTemplate.API.csproj', description: '源代码编译地址')
         string(name: 'HARBORURL', defaultValue: 'hub.docker.com', description: 'harbor地址')
-        string(name: 'HARBORUSER', defaultValue: 'tangzixuan', description: 'harbor用户')
-        string(name: 'HARBORPWD', defaultValue: 'zx250889', description: 'harbor密码')
-        string(name: 'DOCKERFILE', defaultValue: 'src/Ccn.Mzc.TASK/Dockerfile', description: 'dockerfile地址')
-        string(name: 'GITURL', defaultValue: 'http://gitlab.ccn.local/cncop-netcore/testgroup/ccn.mzc.git', description: 'giturl地址')
-        string(name: 'Branch', defaultValue: 'dev', description: 'git branch')
+        string(name: 'HARBORUSER', defaultValue: '', description: 'harbor用户')
+        string(name: 'HARBORPWD', defaultValue: '', description: 'harbor密码')
+        string(name: 'DOCKERFILE', defaultValue: './Kindy.DDDTemplate.API/Dockerfile', description: 'dockerfile地址')
+        string(name: 'GITURL', defaultValue: 'https://github.com/kaibbo/Kandy.git', description: 'giturl地址')
+        string(name: 'Branch', defaultValue: 'master', description: 'git branch')
     }
 
     stages {
+        stage('Pull Code') {
+            steps {
+                script {
+                    /* 清空项目目录缓存 */
+                    sh 'rm -rf ./**'
+                    echo '======================================git clone begin=============================================='
+                    /* 拉取项目代码*/
+                    git branch: "${params.Branch}", credentialsId: "${git_credentialsId}", url: "${params.GITURL}"
+                    echo '======================================git clone end=============================================='
+                }
+            }
+        },
         stage('Build') {
             steps {
-                /* 清空项目目录缓存 */
-                sh 'rm -rf ./**'
-                echo '======================================git clone begin=============================================='
-                /* 拉取项目代码*/
-                git branch: "${params.Branch}", credentialsId: "${git_credentialsId}", url: "${params.GITURL}"
-                echo '======================================git clone end=============================================='
                 script {
                     echo '======================================compile begin=============================================='
-                    sh '/usr/local/dotnet/dotnet restore --no-cache -s https://api.nuget.org/v3/index.json'
-                    sh "/usr/local/dotnet/dotnet build ./${params.PROJECTFILEPATH} -c Release -o ./app "
+                    sh '/usr/share/dotnet/dotnet restore --no-cache -s https://api.nuget.org/v3/index.json'
+                    sh "/usr/share/dotnet/dotnet build ./${params.PROJECTFILEPATH} -c Release -o ./app "
                     sh 'ls -alh ./app'
                     echo '======================================compile end================================================'
                     
@@ -40,7 +46,45 @@ pipeline {
                     // sh "mv ${env.TAR_XZ_FILE} ${env.NGINXFILEPATH}"
                 }
             }
-            post {
+        },
+        stage('Test') {
+            steps { 
+                  echo 'skip test'
+            }
+        },
+         stage('Deploy') {
+            steps {
+                script {
+                  echo '
+                       #! /bin/sh
+                          #docker主机端口
+                          imagePort=8188
+
+                          #pull镜像
+                          docker pull ${HARBORURL}/${PROJECTNAME}:${BUILD_ID}
+
+                          #原容器销毁
+                          docker rm -f ${PROJECTNAME}
+                          docker rmi -f ${PROJECTNAME}:${BUILD_ID} 
+
+                          #运行镜像
+                          docker run -d -p ${imagePort}:80 --name ${PROJECTNAME} ${HARBORURL}/${PROJECTNAME}:${BUILD_ID}
+                      '> /usr/local/work/sh/${PROJECTNAME}/deploy_image.sh,
+
+                 sshPublisher(
+                     publishers: [
+                        sshPublisherDesc(
+                            configName: "121.37.222.34",
+                            verbose: true,
+                            transfers: [
+                                sshTransfer(execCommand: "/usr/local/work/sh/${PROJECTNAME}/deploy_image.sh",execTimeout: 120000),
+                            ]
+                         )
+                    ]
+                )
+              }
+            },
+             post {
                 success {
                     echo '发布成功'
                 }
