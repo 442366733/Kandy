@@ -56,11 +56,10 @@ pipeline {
                 }
             }
         }
-         stages {
        stage('Deploy') {
             steps {
                 script {
-                     sh ''' sed -i "s/\\$harbor_project_name/${HARBOR_GROUP}/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$harbor_project_name/"${HARBOR_GROUP}"/g" ./app/deploy.sh '''
                      sh ''' sed -i "s/\\$harbor_url/"${HARBOR_URL}"/g" ./app/deploy.sh '''
                      sh ''' sed -i "s/\\$project_name/"${PROJECT_NAME}"/g" ./app/deploy.sh '''
                      sh ''' sed -i "s/\\$tag/"${BUILD_ID}"/g" ./app/deploy.sh '''
@@ -93,6 +92,5 @@ pipeline {
                 }
             }
         }
-    }
     }
 }
