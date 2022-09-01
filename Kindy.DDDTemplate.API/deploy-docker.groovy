@@ -59,29 +59,20 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh '''
-echo "
-#! /bin/sh
-docker pull $HARBOR_URL/$HARBOR_GROUP/$PROJECT_NAME:$BUILD_ID
-docker stop $PROJECT_NAME
-docker rm $PROJECT_NAME
-docker run -d -p $HOST_PORT:80 --name $PROJECT_NAME -e ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT $HARBOR_URL/$HARBOR_GROUP/$PROJECT_NAME:$BUILD_ID
-" > /home/netcore/deploy/$PROJECT_NAME-deploy.sh
-chmod +x /home/netcore/deploy/$PROJECT_NAME-deploy.sh
-                      '''
-                    sh 'cat /home/netcore/deploy/$PROJECT_NAME-deploy.sh'
-                    sshPublisher(
-                     publishers: [
-                        sshPublisherDesc(
-                            configName: "121.37.222.34",
-                            verbose: true,
-                            transfers: [
-                                sshTransfer(execCommand: "/home/netcore/deploy/${PROJECT_NAME}-deploy.sh",execTimeout: 120000),
-                            ]
-                         )
-                    ]
-                )
-                // sh  "curl -H \"Content-Type:application/json\" -X POST --data '{\"status\": 1}' ${CALLBACK_URL}"
+                     sshPublisher(publishers: [sshPublisherDesc(configName: '121.37.104.202', 
+                        transfers: [sshTransfer(cleanRemote: false, excludes: '', 
+                        execCommand: 'sh /home/jenkins/netcore/deploy.sh $HARBOR_URL $HARBOR_GROUP $PROJECT_NAME $BUILD_ID $HOST_PORT $ASPNETCORE_ENVIRONMENT', 
+                        execTimeout: 120000, 
+                        flatten: false, 
+                        makeEmptyDirs: false,
+                        noDefaultExcludes: false,
+                        patternSeparator: '[, ]+', 
+                        remoteDirectory: '/home/jenkins/netcore', 
+                        remoteDirectorySDF: false, removePrefix: '', sourceFiles: './app/deploy.sh')],
+                        usePromotionTimestamp: false,
+                        useWorkspaceInPromotion: false, verbose: false)]
+                     )
+                     // sh  "curl -H \"Content-Type:application/json\" -X POST --data '{\"status\": 1}' ${CALLBACK_URL}"
               }
             }
              post {

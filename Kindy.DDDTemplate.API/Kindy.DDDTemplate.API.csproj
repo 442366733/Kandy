@@ -32,10 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="deploy.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="deploy-netcore-docker.groovy">
+    <None Update="deploy-docker.groovy">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
