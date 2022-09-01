@@ -1,12 +1,4 @@
-﻿#! /bin/sh
-
-#接收外部参数
-harbor_url=$1
-harbor_project_name=$2
-project_name=$3
-tag=$4
-port=$5
-env=$6
+#! /bin/sh
 
 imageName=$harbor_url/$harbor_project_name/$project_name:$tag
 echo "$imageName"
@@ -34,5 +26,3 @@ docker pull $imageName
 
 # 启动容器
 docker run -d -p $port:80 --name $project_name -e ASPNETCORE_ENVIRONMENT=$env $imageName
-
-

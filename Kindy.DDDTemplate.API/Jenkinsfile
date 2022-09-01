@@ -56,18 +56,26 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+         stages {
+       stage('Deploy') {
             steps {
                 script {
+                     sh ''' sed -i "s/\\$harbor_project_name/${HARBOR_GROUP}/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$harbor_url/"${HARBOR_URL}"/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$project_name/"${PROJECT_NAME}"/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$tag/"${BUILD_ID}"/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$port/"${HOST_PORT}"/g" ./app/deploy.sh '''
+                     sh ''' sed -i "s/\\$env/"${ASPNETCORE_ENVIRONMENT}"/g" ./app/deploy.sh '''
+                     sh 'cat ./app/deploy.sh'
                      sshPublisher(publishers: [sshPublisherDesc(configName: '121.37.104.202', 
                         transfers: [sshTransfer(cleanRemote: false, excludes: '', 
-                        execCommand: 'sh /home/jenkins/netcore/deploy.sh $HARBOR_URL $HARBOR_GROUP $PROJECT_NAME $BUILD_ID $HOST_PORT $ASPNETCORE_ENVIRONMENT', 
-                        execTimeout: 120000, 
+                        execCommand: 'sh /home/jenkins/netcore/deploy.sh', 
+                        execTimeout: 200000, 
                         flatten: false, 
                         makeEmptyDirs: false,
                         noDefaultExcludes: false,
                         patternSeparator: '[, ]+', 
-                        remoteDirectory: '/home/jenkins/netcore', 
+                        remoteDirectory: '/home/jenkins/netcore/', 
                         remoteDirectorySDF: false, removePrefix: '', sourceFiles: './app/deploy.sh')],
                         usePromotionTimestamp: false,
                         useWorkspaceInPromotion: false, verbose: false)]
@@ -85,5 +93,6 @@ pipeline {
                 }
             }
         }
+    }
     }
 }
