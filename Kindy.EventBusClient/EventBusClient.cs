@@ -86,8 +86,10 @@ namespace Kindy.EventBusClient.Rabbitmq
         /// </summary>
         public EventBusClient StartConsume()
         {
-            Consume();
-            DelayConsume();
+            if (GetSubscribeAttributeNames().Any())
+                Consume();
+            if (GetDelaySubscribeAttributeNames().Any())
+                DelayConsume();
             return this;
         }
 
@@ -181,8 +183,6 @@ namespace Kindy.EventBusClient.Rabbitmq
         /// </summary>
         private void DelayConsume()
         {
-            if (GetDelaySubscribeAttributeNames().Any() == false) return;
-
             TryConnect();
             var channel = _connection.CreateModel();
 
