@@ -8,6 +8,11 @@ namespace Kindy.EventBusClient.Rabbitmq
     public class ConsumerExecutorDescriptor
     {
         /// <summary>
+        /// message ttl
+        /// </summary>
+        public int MessageTTL { get; set; }
+
+        /// <summary>
         /// 类
         /// </summary>
         public TypeInfo ImplTypeInfo { get; set; }
@@ -22,5 +27,4 @@ namespace Kindy.EventBusClient.Rabbitmq
         /// </summary>
         public ParameterInfo ParameterInfo { get; set; }
     }
-
 }

@@ -445,7 +445,7 @@ namespace Kindy.DDDTemplate.API.Extension
             var config = configuration.GetSection(sectionPath).Get<LogEventTransportOptions>();
             services.AddEventBus(option =>
             {
-                option.IsStartSubribe = false;
+                option.IsStartSubribe = true;
                 option.Transport = new RabbitmqClientOptions
                 {
                     HostName = config.HostName,

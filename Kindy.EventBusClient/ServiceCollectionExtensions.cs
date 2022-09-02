@@ -58,7 +58,7 @@ namespace Kindy.EventBusClient.Rabbitmq
                         var parameter = method.GetParameters()?.FirstOrDefault();
                         if (method.GetParameters().Count() != 1)
                             throw new ArgumentException("error method parameter count of [SubscribeAttribute]");
-                        registerEvents.TryAdd(topicAttr.Name, new ConsumerExecutorDescriptor { ImplTypeInfo = impl.GetTypeInfo(), MethodInfo = method, ParameterInfo = parameter });
+                        registerEvents.TryAdd(topicAttr.Name, new ConsumerExecutorDescriptor { MessageTTL = topicAttr.MessageTTL, ImplTypeInfo = impl.GetTypeInfo(), MethodInfo = method, ParameterInfo = parameter });
                     }
                 }
             }

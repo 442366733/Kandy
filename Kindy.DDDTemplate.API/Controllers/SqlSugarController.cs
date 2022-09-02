@@ -44,7 +44,8 @@ namespace Kindy.DDDTemplate.API.Controllers
         public async Task<object> Get(int id)
         {
             var result = await _orderRepository.FirstOrDefaultAsync(x => x.id == id);
-            _logger.LogInformation(JsonConvert.SerializeObject(result));
+            //_logger.LogInformation(JsonConvert.SerializeObject(result));
+            _serviceProvider.GetRequiredService<IEventBusClient>().Publish("test1.delay", new TestEvent { Message = "hello world" }, 10000);
             return result;
         }
     }
